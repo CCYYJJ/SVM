@@ -33,11 +33,11 @@ bool loadTrainImages(const std::string& path, DatabaseType& outDatabase)
 		if (!posImage.empty())
 		{
 			//这里之后可以加一些图像处理过程
-			Mat Im = Mat::zeros(800, 900, CV_8UC3);
-			resize(posImage, posImage, Im.size());
-			medianBlur(posImage, posImage, 5);
+			//Mat Im = Mat::zeros(800, 900, CV_8UC3);
+			//resize(posImage, posImage, Im.size());
+			//medianBlur(posImage, posImage, 5);
 			normalize(posImage, posImage, 0, 255, cv::NORM_MINMAX);
-			equalizeHist(posImage, posImage);
+			//equalizeHist(posImage, posImage);
 			//threshold(posImage, posImage,1 ,255,THRESH_OTSU);
 			//Scharr(posImage, posImage, CV_32F, 1, 0);
 			//adaptiveThreshold(posImage, posImage, 255.0, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 21, 5);
@@ -47,11 +47,11 @@ bool loadTrainImages(const std::string& path, DatabaseType& outDatabase)
 
 		if (!negImage.empty())
 		{
-			Mat Im = Mat::zeros(800, 900, CV_8UC3);
-			resize(negImage, negImage, Im.size());
-			medianBlur(negImage, negImage, 5);
+			//Mat Im = Mat::zeros(800, 900, CV_8UC3);
+			//resize(negImage, negImage, Im.size());
+			//medianBlur(negImage, negImage, 5);
 			normalize(negImage, negImage, 0, 255, cv::NORM_MINMAX);
-			equalizeHist(posImage, posImage);
+			//equalizeHist(posImage, posImage);
 			//threshold(posImage, posImage, 1, 255, THRESH_OTSU);
 			//adaptiveThreshold(negImage, negImage, 255.0, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 21, 5);
 			//medianBlur(negImage, negImage, 9);
@@ -78,10 +78,10 @@ bool loadTestImages(const std::string& path, DataTest& outDatabase){
 		{
 			Mat Im = Mat::zeros(800, 900, CV_8UC3);
 			resize(test, test, Im.size());
-			medianBlur(test, test, 5);
+			//medianBlur(test, test, 5);
 			normalize(test, test, 0, 255, cv::NORM_MINMAX);
 			//adaptiveThreshold(test, test, 255.0, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 21, 5);
-			equalizeHist(test, test);
+			//equalizeHist(test, test);
 			//threshold(test, test, 1, 255, THRESH_OTSU);
 			//medianBlur(test, test, 9);
 			outDatabase.push_back(test);
@@ -141,7 +141,7 @@ bool createVocabulary(const DatabaseType& trainingDb, cv::Mat& outVocabulary)
 		return false;
 	}
 	//BOW中的KMean聚类，通过聚类获得输出的词汇
-	BOWKMeansTrainer bowtrainer(30);
+	BOWKMeansTrainer bowtrainer(50);
 	bowtrainer.add(trainingDescriptors);
 	outVocabulary = bowtrainer.cluster();
 
@@ -251,7 +251,8 @@ bool trainSVM(const cv::Mat& samples, const cv::Mat& labels)
 	svm_param.term_crit.type = CV_TERMCRIT_ITER | CV_TERMCRIT_EPS;
 
 	CvSVM outSVM;
-	outSVM.train(samples, labels, Mat(), Mat(), svm_param);
+	outSVM.train_auto(samples, labels, Mat(), Mat(), svm_param,
+		15,outSVM.get_default_grid(CvSVM::C),outSVM.get_default_grid(CvSVM::GAMMA));
 	outSVM.save("SVM_SURF_BOW.xml");
 
 	return true;
@@ -317,7 +318,7 @@ int main(int argc, char *argv[])
 {
 
 	std::cout << "1. Loading images" << std::endl;
-	const std::string trainingPath("D:/Qt Project/image/train image/train/");
+	const std::string trainingPath("D:/Qt Project/image/train image/train/New/");
 	const std::string testingPath("D:/Qt Project/image/test image/");
 
 	DatabaseType trainingDb; 
@@ -360,10 +361,10 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	std::cout << std::endl;
+	std::cout << "Finish Training"<<std::endl;
 	// -------------------------------------------
 
-	std::cout << "5. Testing SVM" << std::endl;
+	/*std::cout << "5. Testing SVM" << std::endl;
 
 	std::cout << "载入测试图像" << endl;
 	if (!loadTestImages(testingPath, testingDb))
@@ -379,7 +380,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	std::cout << std::endl;
+	std::cout << std::endl;*/
 	// -------------------------------------------
 
 	return 1;
